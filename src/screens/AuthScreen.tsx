@@ -13,6 +13,7 @@ import {
   Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../context/ThemeContext';
 import { useTransactions } from '../context/TransactionContext';
 import { setAuthenticated } from '../utils/storage';
@@ -75,7 +76,7 @@ const AuthScreen: React.FC<Props> = ({ onAuth }) => {
 
   return (
     <LinearGradient
-      colors={isDark ? ['#0D0D0D', '#111827', '#0D0D0D'] : ['#F5F6FA', '#E8FFF5', '#F5F6FA']}
+      colors={['#050505', '#0E1114', '#050505']}
       style={styles.gradient}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -86,32 +87,32 @@ const AuthScreen: React.FC<Props> = ({ onAuth }) => {
           showsVerticalScrollIndicator={false}>
           {/* Logo */}
           <View style={styles.logoSection}>
-            <View style={[styles.logoBox, { backgroundColor: theme.surface }]}>
-              <Text style={[styles.logoLetter, { color: theme.text }]}>P</Text>
+            <View style={styles.logoBox}>
+              <Text style={styles.logoLetter}>P</Text>
             </View>
-            <Text style={[styles.appName, { color: theme.text }]}>Welcome to PayU</Text>
-            <Text style={[styles.tagline, { color: theme.textSecondary }]}>
+            <Text style={styles.appName}>Welcome to PayU</Text>
+            <Text style={styles.tagline}>
               Send money globally with the real exchange rate
             </Text>
           </View>
 
           {/* Card */}
-          <View style={[styles.card, { backgroundColor: theme.surface }]}>
-            <Text style={[styles.cardTitle, { color: theme.text }]}>Get started</Text>
-            <Text style={[styles.cardSub, { color: theme.textSecondary }]}>
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Get started</Text>
+            <Text style={styles.cardSub}>
               Sign in to your account or create a new one
             </Text>
 
             {/* Tab Switcher */}
-            <View style={[styles.tabContainer, { backgroundColor: theme.inputBg }]}>
+            <View style={styles.tabContainer}>
               <Animated.View style={[styles.tabIndicator, { left: tabIndicatorLeft }]} />
               <TouchableOpacity style={styles.tabBtn} onPress={() => switchTab('signin')}>
-                <Text style={[styles.tabText, { color: tab === 'signin' ? '#000' : theme.textSecondary }]}>
+                <Text style={[styles.tabText, { color: tab === 'signin' ? '#FFFFFF' : '#7C8490' }]}>
                   Sign In
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.tabBtn} onPress={() => switchTab('signup')}>
-                <Text style={[styles.tabText, { color: tab === 'signup' ? '#000' : theme.textSecondary }]}>
+                <Text style={[styles.tabText, { color: tab === 'signup' ? '#FFFFFF' : '#7C8490' }]}>
                   Sign Up
                 </Text>
               </TouchableOpacity>
@@ -120,11 +121,11 @@ const AuthScreen: React.FC<Props> = ({ onAuth }) => {
             {/* Form */}
             {tab === 'signup' && (
               <View>
-                <Text style={[styles.label, { color: theme.textSecondary }]}>Full Name</Text>
+                <Text style={styles.label}>Full Name</Text>
                 <TextInput
-                  style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text, borderColor: errors.name ? '#FF6B6B' : 'transparent' }]}
+                  style={[styles.input, { borderColor: errors.name ? '#FF6B6B' : '#2A2F36' }]}
                   placeholder="Enter your full name"
-                  placeholderTextColor={theme.textSecondary}
+                  placeholderTextColor="#7C8490"
                   value={fullName}
                   onChangeText={setFullName}
                 />
@@ -132,11 +133,11 @@ const AuthScreen: React.FC<Props> = ({ onAuth }) => {
               </View>
             )}
 
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Email</Text>
+            <Text style={styles.label}>Email</Text>
             <TextInput
-              style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text, borderColor: errors.email ? '#FF6B6B' : 'transparent' }]}
+              style={[styles.input, { borderColor: errors.email ? '#FF6B6B' : '#2A2F36' }]}
               placeholder="Enter your email"
-              placeholderTextColor={theme.textSecondary}
+              placeholderTextColor="#7C8490"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
@@ -144,12 +145,12 @@ const AuthScreen: React.FC<Props> = ({ onAuth }) => {
             />
             {errors.email && <Text style={styles.error}>{errors.email}</Text>}
 
-            <Text style={[styles.label, { color: theme.textSecondary }]}>Password</Text>
+            <Text style={styles.label}>Password</Text>
             <View style={styles.passwordRow}>
               <TextInput
-                style={[styles.input, styles.passwordInput, { backgroundColor: theme.inputBg, color: theme.text, borderColor: errors.password ? '#FF6B6B' : 'transparent' }]}
+                style={[styles.input, styles.passwordInput, { borderColor: errors.password ? '#FF6B6B' : '#2A2F36' }]}
                 placeholder={tab === 'signup' ? 'Create a password' : 'Enter your password'}
-                placeholderTextColor={theme.textSecondary}
+                placeholderTextColor="#7C8490"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
@@ -157,18 +158,22 @@ const AuthScreen: React.FC<Props> = ({ onAuth }) => {
               <TouchableOpacity
                 style={styles.eyeBtn}
                 onPress={() => setShowPassword((p) => !p)}>
-                <Text style={{ fontSize: 18 }}>{showPassword ? '🙈' : '👁️'}</Text>
+                <Ionicons
+                  name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                  size={18}
+                  color="#B9C0CA"
+                />
               </TouchableOpacity>
             </View>
             {errors.password && <Text style={styles.error}>{errors.password}</Text>}
 
             {tab === 'signup' && (
               <View>
-                <Text style={[styles.label, { color: theme.textSecondary }]}>Confirm Password</Text>
+                <Text style={styles.label}>Confirm Password</Text>
                 <TextInput
-                  style={[styles.input, { backgroundColor: theme.inputBg, color: theme.text, borderColor: errors.confirm ? '#FF6B6B' : 'transparent' }]}
+                  style={[styles.input, { borderColor: errors.confirm ? '#FF6B6B' : '#2A2F36' }]}
                   placeholder="Confirm your password"
-                  placeholderTextColor={theme.textSecondary}
+                  placeholderTextColor="#7C8490"
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry={!showPassword}
@@ -179,16 +184,16 @@ const AuthScreen: React.FC<Props> = ({ onAuth }) => {
 
             {tab === 'signin' && (
               <TouchableOpacity style={styles.forgotBtn}>
-                <Text style={[styles.forgotText, { color: theme.textSecondary }]}>Forgot password?</Text>
+                <Text style={styles.forgotText}>Forgot password?</Text>
               </TouchableOpacity>
             )}
 
             <TouchableOpacity onPress={handleSubmit} disabled={loading}>
               <LinearGradient
-                colors={['#FFFFFF', '#EEEEEE']}
+                colors={['#20262D', '#101317']}
                 style={styles.submitBtn}>
                 {loading ? (
-                  <ActivityIndicator color="#000" />
+                  <ActivityIndicator color="#FFFFFF" />
                 ) : (
                   <Text style={styles.submitText}>
                     {tab === 'signin' ? 'Sign In' : 'Create Account'}
@@ -215,28 +220,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 16,
+    backgroundColor: '#111418',
+    borderWidth: 1,
+    borderColor: '#2E353E',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
     elevation: 6,
   },
-  logoLetter: { fontSize: 26, fontWeight: '800' },
-  appName: { fontSize: 24, fontWeight: '700', marginBottom: 6 },
-  tagline: { fontSize: 13, textAlign: 'center' },
+  logoLetter: { fontSize: 26, fontWeight: '800', color: '#FFFFFF' },
+  appName: { fontSize: 24, fontWeight: '700', marginBottom: 6, color: '#F5F7FA' },
+  tagline: { fontSize: 13, textAlign: 'center', color: '#8D96A2' },
   card: {
     borderRadius: 24,
     padding: 20,
+    backgroundColor: '#0F1318',
+    borderWidth: 1,
+    borderColor: '#232A33',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
+    shadowOpacity: 0.35,
+    shadowRadius: 20,
     elevation: 8,
   },
-  cardTitle: { fontSize: 18, fontWeight: '700', marginBottom: 4 },
-  cardSub: { fontSize: 13, marginBottom: 16 },
+  cardTitle: { fontSize: 18, fontWeight: '700', marginBottom: 4, color: '#FFFFFF' },
+  cardSub: { fontSize: 13, marginBottom: 16, color: '#8D96A2' },
   tabContainer: {
     flexDirection: 'row',
+    backgroundColor: '#171C22',
     borderRadius: 12,
     padding: 3,
     marginBottom: 20,
@@ -248,19 +260,21 @@ const styles = StyleSheet.create({
     top: 3,
     bottom: 3,
     width: '47%',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#2A323C',
     borderRadius: 10,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
     elevation: 3,
   },
   tabBtn: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   tabText: { fontSize: 14, fontWeight: '600' },
-  label: { fontSize: 13, marginBottom: 6, marginTop: 12 },
+  label: { fontSize: 13, marginBottom: 6, marginTop: 12, color: '#A8B1BC' },
   input: {
     height: 48,
+    backgroundColor: '#161B21',
+    color: '#FFFFFF',
     borderRadius: 12,
     paddingHorizontal: 14,
     fontSize: 14,
@@ -274,17 +288,20 @@ const styles = StyleSheet.create({
     top: 0,
     bottom: 0,
     justifyContent: 'center',
+    alignItems: 'center',
   },
   forgotBtn: { alignItems: 'flex-end', marginTop: 6, marginBottom: 4 },
-  forgotText: { fontSize: 13 },
+  forgotText: { fontSize: 13, color: '#8D96A2' },
   submitBtn: {
     height: 50,
     borderRadius: 14,
+    borderWidth: 1,
+    borderColor: '#3B4552',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
   },
-  submitText: { fontSize: 15, fontWeight: '700', color: '#000' },
+  submitText: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
   error: { color: '#FF6B6B', fontSize: 12, marginTop: 4 },
 });
 

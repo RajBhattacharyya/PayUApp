@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  FlatList,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { PieChart } from 'react-native-gifted-charts';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '../context/ThemeContext';
 import { useTransactions } from '../context/TransactionContext';
 import TransactionItem from '../components/TransactionItem';
@@ -23,12 +25,22 @@ interface Props {
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const FILTER_TABS = ['All', 'Income', 'Expense'];
+const CREDIT_SCORE = 660;
+const SCORE_MIN = 300;
+const SCORE_MAX = 850;
 
 const BalancesScreen: React.FC<Props> = ({ navigation }) => {
-  const { theme, isDark } = useTheme();
+  const { theme, isDark, toggleTheme } = useTheme();
   const { transactions, getMonthlySummary, getFilteredTransactions } = useTransactions();
   const [filter, setFilter] = useState('All');
   const [viewMode, setViewMode] = useState<'chart' | 'list'>('chart');
+  const [gaugeKey, setGaugeKey] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setGaugeKey((v) => v + 1);
+    }, [])
+  );
 
   const monthKey = getCurrentMonthKey();
   const summary = getMonthlySummary(monthKey);
@@ -53,6 +65,19 @@ const BalancesScreen: React.FC<Props> = ({ navigation }) => {
     };
   });
 
+  const creditGaugeData = [
+    { value: 36, color: '#46D6C6', strokeColor: theme.surface, strokeWidth: 7 },
+    { value: 20, color: '#E27AD8', strokeColor: theme.surface, strokeWidth: 7 },
+    { value: 24, color: '#8BC3FF', strokeColor: theme.surface, strokeWidth: 7 },
+    { value: 20, color: '#F8D78B', strokeColor: theme.surface, strokeWidth: 7 },
+  ];
+
+  const gaugeRadius = 112;
+  const scoreProgress = Math.max(0, Math.min(1, (CREDIT_SCORE - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)));
+  const pointerAngle = Math.PI - scoreProgress * Math.PI;
+  const pointerX = gaugeRadius + gaugeRadius * Math.cos(pointerAngle);
+  const pointerY = gaugeRadius - gaugeRadius * Math.sin(pointerAngle);
+
   return (
     <LinearGradient
       colors={isDark ? ['#0D0D0D', '#111111'] : ['#F5F6FA', '#EEF2FF']}
@@ -60,6 +85,19 @@ const BalancesScreen: React.FC<Props> = ({ navigation }) => {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scroll}>
+
+        {/* App Bar */}
+        <View style={styles.topBar}>
+          <Text style={[styles.appName, { color: theme.text }]}>PayU</Text>
+          <View style={styles.topBarRight}>
+            <TouchableOpacity onPress={toggleTheme} style={[styles.topBtn, { backgroundColor: theme.card }]}>
+              <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={18} color={theme.text} />
+            </TouchableOpacity>
+            <TouchableOpacity style={[styles.topBtn, { backgroundColor: theme.card }]}>
+              <Ionicons name="notifications-outline" size={18} color={theme.text} />
+            </TouchableOpacity>
+          </View>
+        </View>
 
         {/* Header */}
         <View style={styles.header}>
@@ -76,21 +114,80 @@ const BalancesScreen: React.FC<Props> = ({ navigation }) => {
           balance={summary.balance}
         />
 
+        {/* Credit Score */}
+        <View style={[styles.creditCard, { backgroundColor: theme.surface }]}>
+          <View style={styles.creditGaugeWrap}>
+            <View style={styles.gaugeBox}>
+              <PieChart
+                key={gaugeKey}
+                data={creditGaugeData}
+                donut
+                semiCircle
+                radius={gaugeRadius}
+                innerRadius={100}
+                curvedStartEdges
+                curvedEndEdges
+                edgesRadius={7}
+                innerCircleColor={isDark ? '#0A0C0F' : '#FFFFFF'}
+                centerLabelComponent={() => (
+                  <View style={styles.creditCenterLabel}>
+                    <Text style={[styles.creditScore, { color: theme.text }]}>{CREDIT_SCORE}</Text>
+                  </View>
+                )}
+                isAnimated
+                animationDuration={1100}
+                backgroundColor="transparent"
+              />
+
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.pointerOuter,
+                  {
+                    left: pointerX - 15,
+                    top: pointerY - 5,
+                  },
+                ]}>
+                <View style={styles.pointerInner} />
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.creditHeader}>
+            <Text style={[styles.creditTitle, { color: theme.text }]}>Credit Score</Text>
+            <Text style={[styles.creditMeta, { color: theme.textSecondary }]}>Last Check on 21 Apr</Text>
+          </View>
+        </View>
+
         {/* View Toggle */}
         <View style={[styles.viewToggle, { backgroundColor: theme.card }]}>
           <TouchableOpacity
             onPress={() => setViewMode('chart')}
             style={[styles.viewBtn, viewMode === 'chart' && styles.viewBtnActive]}>
-            <Text style={[styles.viewBtnText, { color: viewMode === 'chart' ? '#fff' : theme.textSecondary }]}>
-              📊 Charts
-            </Text>
+            <View style={styles.viewBtnContent}>
+              <Ionicons
+                name={viewMode === 'chart' ? 'pie-chart' : 'pie-chart-outline'}
+                size={16}
+                color={viewMode === 'chart' ? '#fff' : theme.textSecondary}
+              />
+              <Text style={[styles.viewBtnText, { color: viewMode === 'chart' ? '#fff' : theme.textSecondary }]}>
+                Charts
+              </Text>
+            </View>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setViewMode('list')}
             style={[styles.viewBtn, viewMode === 'list' && styles.viewBtnActive]}>
-            <Text style={[styles.viewBtnText, { color: viewMode === 'list' ? '#fff' : theme.textSecondary }]}>
-              📋 List
-            </Text>
+            <View style={styles.viewBtnContent}>
+              <Ionicons
+                name={viewMode === 'list' ? 'list' : 'list-outline'}
+                size={16}
+                color={viewMode === 'list' ? '#fff' : theme.textSecondary}
+              />
+              <Text style={[styles.viewBtnText, { color: viewMode === 'list' ? '#fff' : theme.textSecondary }]}>
+                List
+              </Text>
+            </View>
           </TouchableOpacity>
         </View>
 
@@ -115,11 +212,11 @@ const BalancesScreen: React.FC<Props> = ({ navigation }) => {
 
             {/* Currency Info */}
             <View style={[styles.chartCard, { backgroundColor: theme.surface }]}>
-              <Text style={[styles.chartTitle, { color: theme.text }]}>Available Currencies</Text>
+              <Text style={[styles.chartTitle, { color: theme.text }]}>Currency Rates (INR)</Text>
               {[
-                { flag: '🇨🇦', name: 'Canadian Dollar', code: 'CAD', rate: '0.74' },
-                { flag: '🇪🇺', name: 'Euro', code: 'EUR', rate: '1.08' },
-                { flag: '🇬🇧', name: 'British Pound', code: 'GBP', rate: '1.27' },
+                { flag: '🇨🇦', name: 'Canadian Dollar', code: 'CAD', inrRate: '61.50' },
+                { flag: '🇪🇺', name: 'Euro', code: 'EUR', inrRate: '90.30' },
+                { flag: '🇬🇧', name: 'British Pound', code: 'GBP', inrRate: '105.20' },
               ].map((c, i) => (
                 <View key={i} style={[styles.currencyRow, { borderBottomColor: theme.border }]}>
                   <Text style={{ fontSize: 24 }}>{c.flag}</Text>
@@ -129,7 +226,7 @@ const BalancesScreen: React.FC<Props> = ({ navigation }) => {
                   </View>
                   <View style={[styles.enableBtn, { borderColor: theme.border }]}>
                     <Text style={[styles.enableBtnText, { color: theme.textSecondary }]}>
-                      1 USD = {c.rate}
+                      1 {c.code} = ₹{c.inrRate}
                     </Text>
                   </View>
                 </View>
@@ -174,13 +271,26 @@ const BalancesScreen: React.FC<Props> = ({ navigation }) => {
 const styles = StyleSheet.create({
   gradient: { flex: 1 },
   scroll: { padding: 20, paddingTop: 60, paddingBottom: 100 },
+  topBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  appName: { fontSize: 18, fontWeight: '800', letterSpacing: 0.3 },
+  topBarRight: { flexDirection: 'row', gap: 10 },
+  topBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   header: { marginBottom: 8 },
   headerTitle: { fontSize: 26, fontWeight: '800' },
   headerSub: {
     fontSize: 13,
     marginTop: 2,
-    borderBottomWidth: 1.5,
-    borderBottomColor: '#F4C542',
     alignSelf: 'flex-start',
     paddingBottom: 1,
   },
@@ -197,8 +307,62 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  viewBtnActive: { backgroundColor: '#333' },
+  viewBtnContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  viewBtnActive: { backgroundColor: '#1B1B1B' },
   viewBtnText: { fontSize: 13, fontWeight: '600' },
+  creditCard: {
+    borderRadius: 20,
+    padding: 16,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  creditHeader: {
+    alignItems: 'center',
+    marginTop: 0,
+  },
+  creditTitle: { fontSize: 16, fontWeight: '800' },
+  creditMeta: { fontSize: 12, marginTop: 2 },
+  creditGaugeWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 0,
+    marginBottom: -24,
+    height: 190,
+  },
+  gaugeBox: {
+    width: 224,
+    height: 130,
+    position: 'relative',
+  },
+  pointerOuter: {
+    position: 'absolute',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: '#8BC3FF',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.65)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#8BC3FF',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
+    elevation: 6,
+  },
+  pointerInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#FFFFFF',
+  },
+  creditCenterLabel: {
+    alignItems: 'center',
+    marginTop: -2,
+    width: 190,
+  },
+  creditScore: { fontSize: 48, fontWeight: '800', letterSpacing: -1 },
+  creditStatus: { fontSize: 13, fontWeight: '700', marginTop: 2, textAlign: 'center' },
   chartCard: {
     borderRadius: 20,
     padding: 16,

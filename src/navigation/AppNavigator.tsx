@@ -3,6 +3,8 @@ import { View, Text } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HomeScreen from '../screens/HomeScreen';
 import BalancesScreen from '../screens/BalancesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -12,26 +14,39 @@ import { useTheme } from '../context/ThemeContext';
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-const TabIcon = ({ emoji, label, focused, color }: any) => (
-  <View style={{ alignItems: 'center', gap: 2 }}>
-    <Text style={{ fontSize: focused ? 22 : 20 }}>{emoji}</Text>
-    <Text style={{ fontSize: 10, color, fontWeight: focused ? '700' : '400' }}>{label}</Text>
+const TabIcon = ({ iconName, activeIconName, label, focused, color }: any) => (
+  <View style={{ alignItems: 'center', justifyContent: 'center', gap: 3, minWidth: 72 }}>
+    <Ionicons
+      name={focused ? activeIconName : iconName}
+      size={focused ? 22 : 20}
+      color={color}
+    />
+    <Text
+      numberOfLines={1}
+      ellipsizeMode="clip"
+      style={{ fontSize: 11, color, fontWeight: focused ? '700' : '500', letterSpacing: 0.2, textAlign: 'center' }}>
+      {label}
+    </Text>
   </View>
 );
 
 const MainTabs = ({ onLogout }: { onLogout: () => void }) => {
   const { theme } = useTheme();
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        tabBarActiveTintColor: theme.accent,
+        tabBarInactiveTintColor: theme.textSecondary,
         tabBarStyle: {
           backgroundColor: theme.tabBar,
           borderTopColor: theme.border,
           borderTopWidth: 1,
-          height: 70,
-          paddingBottom: 10,
-          paddingTop: 6,
+          height: 45 + insets.bottom,
+          paddingBottom: Math.max(10, insets.bottom),
+          paddingTop: 8,
         },
         tabBarShowLabel: false,
       }}>
@@ -39,7 +54,13 @@ const MainTabs = ({ onLogout }: { onLogout: () => void }) => {
         name="Home"
         options={{
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon emoji="🏠" label="Home" focused={focused} color={color} />
+            <TabIcon
+              iconName="home-outline"
+              activeIconName="home"
+              label="Home"
+              focused={focused}
+              color={color}
+            />
           ),
         }}>
         {(props) => <HomeScreen {...props} />}
@@ -48,7 +69,13 @@ const MainTabs = ({ onLogout }: { onLogout: () => void }) => {
         name="Balances"
         options={{
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon emoji="📊" label="Balances" focused={focused} color={color} />
+            <TabIcon
+              iconName="wallet-outline"
+              activeIconName="wallet"
+              label="Balances"
+              focused={focused}
+              color={color}
+            />
           ),
         }}>
         {(props) => <BalancesScreen {...props} />}
@@ -57,7 +84,13 @@ const MainTabs = ({ onLogout }: { onLogout: () => void }) => {
         name="Profile"
         options={{
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon emoji="👤" label="Profile" focused={focused} color={color} />
+            <TabIcon
+              iconName="person-outline"
+              activeIconName="person"
+              label="Profile"
+              focused={focused}
+              color={color}
+            />
           ),
         }}>
         {(props) => <ProfileScreen {...props} onLogout={onLogout} />}

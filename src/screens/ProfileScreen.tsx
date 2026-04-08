@@ -12,6 +12,7 @@ import {
   Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../context/ThemeContext';
 import { useTransactions } from '../context/TransactionContext';
 import { clearAll, setAuthenticated } from '../utils/storage';
@@ -74,13 +75,13 @@ const ProfileScreen: React.FC<Props> = ({ navigation, onLogout }) => {
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
           {/* Top bar */}
           <View style={styles.topBar}>
-            <Text style={[styles.appName, { color: theme.textSecondary }]}>PayU</Text>
+            <Text style={[styles.appName, { color: theme.text }]}>PayU</Text>
             <View style={styles.topBarRight}>
               <TouchableOpacity onPress={toggleTheme} style={[styles.topBtn, { backgroundColor: theme.card }]}>
-                <Text>{isDark ? '☀️' : '🌙'}</Text>
+                <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={18} color={theme.text} />
               </TouchableOpacity>
               <TouchableOpacity style={[styles.topBtn, { backgroundColor: theme.card }]}>
-                <Text>🔔</Text>
+                <Ionicons name="notifications-outline" size={18} color={theme.text} />
               </TouchableOpacity>
             </View>
           </View>
@@ -186,7 +187,11 @@ const ProfileScreen: React.FC<Props> = ({ navigation, onLogout }) => {
                 <TouchableOpacity
                   onPress={() => setShowPassword((p) => !p)}
                   style={styles.eyeBtn}>
-                  <Text>{showPassword ? '🙈' : '👁️'}</Text>
+                  <Ionicons
+                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+                    size={18}
+                    color={theme.textSecondary}
+                  />
                 </TouchableOpacity>
               </View>
               {errors.password && <Text style={styles.error}>{errors.password}</Text>}
@@ -233,12 +238,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 24,
   },
-  appName: { fontSize: 16, fontWeight: '700' },
+  appName: { fontSize: 18, fontWeight: '800', letterSpacing: 0.3 },
   topBarRight: { flexDirection: 'row', gap: 10 },
   topBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+    width: 38,
+    height: 38,
+    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },

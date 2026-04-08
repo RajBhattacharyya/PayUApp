@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
 } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { CATEGORIES, Category } from '../utils/categories';
 import { useTheme } from '../context/ThemeContext';
 
@@ -34,7 +35,7 @@ const CategoryPicker: React.FC<Props> = ({ selected, type, onSelect }) => {
                 borderColor: isSelected ? cat.color : theme.border,
               },
             ]}>
-            <Text style={styles.icon}>{cat.icon}</Text>
+            <Ionicons name={cat.icon as any} size={16} color={isSelected ? '#fff' : cat.color} />
             <Text style={[styles.label, { color: isSelected ? '#fff' : theme.textSecondary }]}>
               {cat.name}
             </Text>
@@ -57,7 +58,6 @@ const styles = StyleSheet.create({
     marginRight: 8,
     gap: 6,
   },
-  icon: { fontSize: 16 },
   label: { fontSize: 13, fontWeight: '500' },
 });
 

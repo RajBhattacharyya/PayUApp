@@ -1,4 +1,4 @@
-export const formatCurrency = (amount: number, symbol = '$'): string => {
+export const formatCurrency = (amount: number, symbol = '₹'): string => {
   return `${symbol}${Math.abs(amount).toLocaleString('en-US', {
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
