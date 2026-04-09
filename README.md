@@ -94,6 +94,20 @@ Notes:
 - `ios` requires macOS for simulator builds.
 - On physical devices, scan the QR code from Expo CLI using Expo Go.
 
+## Build Location
+
+- Local build folder: `builds/`
+- EAS cloud builds: Expo dashboard for this project  
+  `https://expo.dev/accounts/rajbhattacharyya/projects/payuapp/builds`
+
+### Build APK
+
+```bash
+eas build --platform android --profile apk
+```
+
+After the build completes, download the APK from the EAS build page and optionally place it in `builds/` for local sharing/history.
+
 ## Screenshots
 
 ### Auth
@@ -134,7 +148,3 @@ Notes:
 ## Data & Storage
 
 The app stores user/auth/theme/transactions locally using AsyncStorage. No backend is required for local development.
-
-## License
-
-This project is for educational and development use.
