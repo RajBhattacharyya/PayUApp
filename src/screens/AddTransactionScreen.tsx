@@ -16,6 +16,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../context/ThemeContext';
 import { useTransactions } from '../context/TransactionContext';
 import CategoryPicker from '../components/CategoryPicker';
+import { typography, spacing } from '../theme/typography';
 
 interface Props {
     navigation: any;
@@ -87,7 +88,7 @@ const AddTransactionScreen: React.FC<Props> = ({ navigation }) => {
 
     return (
         <LinearGradient
-            colors={['#050505', '#0B110E', '#050505']}
+            colors={isDark ? ['#050505', '#0B110E', '#050505'] : ['#FAFAFA', '#FFFDF8', '#FAFAFA']}
             style={styles.gradient}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -129,8 +130,8 @@ const AddTransactionScreen: React.FC<Props> = ({ navigation }) => {
                         style={[
                             styles.typeToggle,
                             {
-                                backgroundColor: 'rgba(10, 18, 14, 0.92)',
-                                borderColor: 'rgba(124, 255, 185, 0.12)',
+                                backgroundColor: isDark ? 'rgba(10, 18, 14, 0.92)' : '#FFFFFF',
+                                borderColor: isDark ? 'rgba(124, 255, 185, 0.12)' : theme.border,
                             },
                         ]}>
                         <Animated.View style={[styles.typeIndicator, { left: typeIndicatorLeft, backgroundColor: typeColor }]} />
@@ -149,7 +150,14 @@ const AddTransactionScreen: React.FC<Props> = ({ navigation }) => {
                     </View>
 
                     {/* Form */}
-                    <View style={[styles.form, { backgroundColor: theme.surface }]}>
+                    <View
+                        style={[
+                            styles.form,
+                            {
+                                backgroundColor: theme.surface,
+                                borderColor: isDark ? 'rgba(124, 255, 185, 0.12)' : theme.border,
+                            },
+                        ]}>
                         {/* Amount Input */}
                         <Text style={[styles.label, { color: theme.textSecondary }]}>Amount</Text>
                         <TextInput
@@ -227,12 +235,12 @@ const AddTransactionScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     gradient: { flex: 1 },
-    scroll: { padding: 20, paddingTop: 60, paddingBottom: 40 },
+    scroll: { padding: spacing.lg, paddingTop: 60, paddingBottom: 40 },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 24,
+        marginBottom: spacing.lg,
     },
     headerCenter: {
         flex: 1,
@@ -253,36 +261,36 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
     },
-    headerTitle: { fontSize: 18, fontWeight: '800' },
-    headerSub: { fontSize: 11, marginTop: 2, textAlign: 'center' },
-    amountDisplay: { marginBottom: 16 },
+    headerTitle: { fontSize: typography.lg, fontWeight: '800' },
+    headerSub: { fontSize: typography.xs, marginTop: 2, textAlign: 'center' },
+    amountDisplay: { marginBottom: spacing.md },
     amountGradient: {
         borderRadius: 20,
-        padding: 24,
+        padding: spacing.lg,
         alignItems: 'center',
     },
     amountPrefix: {
         color: 'rgba(255,255,255,0.6)',
-        fontSize: 18,
+        fontSize: typography.md,
         fontWeight: '500',
-        marginBottom: 4,
+        marginBottom: spacing.xs,
     },
     amountText: {
         color: '#fff',
-        fontSize: 48,
+        fontSize: typography.lg,
         fontWeight: '800',
         letterSpacing: -1,
     },
     amountType: {
         color: 'rgba(255,255,255,0.6)',
-        fontSize: 13,
-        marginTop: 4,
+        fontSize: typography.xs,
+        marginTop: spacing.xs,
     },
     typeToggle: {
         flexDirection: 'row',
         borderRadius: 14,
-        padding: 4,
-        marginBottom: 16,
+        padding: spacing.xs,
+        marginBottom: spacing.md,
         position: 'relative',
         height: 48,
         borderWidth: 1,
@@ -301,29 +309,29 @@ const styles = StyleSheet.create({
     },
     typeBtn: { flex: 1, alignItems: 'center', justifyContent: 'center' },
     typeBtnContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    typeBtnText: { fontSize: 14, fontWeight: '600' },
+    typeBtnText: { fontSize: typography.sm, fontWeight: '600' },
     form: {
         borderRadius: 20,
-        padding: 20,
-        marginBottom: 16,
+        padding: spacing.lg,
+        marginBottom: spacing.md,
         backgroundColor: 'rgba(16, 24, 21, 0.9)',
         borderWidth: 1,
         borderColor: 'rgba(124, 255, 185, 0.12)',
     },
-    label: { fontSize: 13, marginBottom: 6, marginTop: 12 },
+    label: { fontSize: typography.xs, marginBottom: 6, marginTop: 12 },
     input: {
         height: 48,
         borderRadius: 12,
         paddingHorizontal: 14,
-        fontSize: 14,
+        fontSize: typography.sm,
         borderWidth: 1.5,
     },
     noteInput: { height: 80, paddingTop: 12 },
-    error: { color: '#FF6B6B', fontSize: 12, marginTop: 4 },
+    error: { color: '#FF6B6B', fontSize: typography.xs, marginTop: 4 },
     quickAmounts: {
         flexDirection: 'row',
-        gap: 8,
-        marginTop: 16,
+        gap: spacing.xs,
+        marginTop: spacing.md,
     },
     quickAmountBtn: {
         flex: 1,
@@ -332,7 +340,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 1,
     },
-    quickAmountText: { fontSize: 13, fontWeight: '700' },
+    quickAmountText: { fontSize: typography.xs, fontWeight: '700' },
     submitBtn: {
         height: 54,
         borderRadius: 16,
@@ -340,7 +348,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     submitContent: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    submitText: { color: '#fff', fontSize: 16, fontWeight: '800' },
+    submitText: { color: '#fff', fontSize: typography.md, fontWeight: '800' },
 });
 
 export default AddTransactionScreen;

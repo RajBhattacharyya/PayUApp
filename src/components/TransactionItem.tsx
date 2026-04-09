@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Transaction } from '../utils/storage';
 import { getCategoryById } from '../utils/categories';
 import { formatCurrency, formatShortDate } from '../utils/formatters';
+import { typography, spacing } from '../theme/typography';
 import { useTheme } from '../context/ThemeContext';
 import { useTransactions } from '../context/TransactionContext';
 
@@ -40,27 +41,6 @@ const TransactionItem: React.FC<Props> = ({ transaction }) => {
   const { deleteTransaction } = useTransactions();
   const category = getCategoryById(transaction.category);
   const scaleAnim = useRef(new Animated.Value(1)).current;
-  const borderGlowAnim = useRef(new Animated.Value(0.35)).current;
-
-  useEffect(() => {
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(borderGlowAnim, {
-          toValue: 0.9,
-          duration: 1300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(borderGlowAnim, {
-          toValue: 0.35,
-          duration: 1300,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-
-    pulse.start();
-    return () => pulse.stop();
-  }, [borderGlowAnim]);
 
   const handleLongPress = () => {
     Alert.alert('Delete Transaction', 'Remove this transaction?', [
@@ -79,8 +59,9 @@ const TransactionItem: React.FC<Props> = ({ transaction }) => {
   const cardGradientColors = (isIncome
     ? ['#070F0B', '#0D1B14', '#13261D']
     : ['#14070A', '#2A0710', '#4A1020']) as [string, string, string];
-  const borderColor = isIncome ? 'rgba(67, 125, 95, 0.55)' : 'rgba(255, 97, 122, 0.56)';
-  const animatedBorderColor = isIncome ? 'rgba(104, 208, 156, 0.6)' : 'rgba(255, 120, 140, 0.66)';
+  const accentColor = isIncome ? theme.income : theme.expense;
+  const primaryTextColor = '#FFFFFF';
+  const secondaryTextColor = 'rgba(255,255,255,0.72)';
 
   return (
     <TouchableOpacity
@@ -93,10 +74,10 @@ const TransactionItem: React.FC<Props> = ({ transaction }) => {
           styles.container,
           {
             transform: [{ scale: scaleAnim }],
-            borderColor,
             shadowOpacity: 0.2,
           },
         ]}>
+        <View style={[styles.accentBar, { backgroundColor: accentColor }]} />
         <LinearGradient
           colors={cardGradientColors}
           start={{ x: 0, y: 0 }}
@@ -106,8 +87,8 @@ const TransactionItem: React.FC<Props> = ({ transaction }) => {
             <Ionicons name={categoryIcon} size={20} color={category.color} />
           </View>
           <View style={styles.details}>
-            <Text style={[styles.name, { color: theme.text }]}>{category.name}</Text>
-            <Text style={[styles.note, { color: theme.textSecondary }]}>
+            <Text style={[styles.name, { color: primaryTextColor }]}>{category.name}</Text>
+            <Text style={[styles.note, { color: secondaryTextColor }]}>
               {transaction.note || formatShortDate(transaction.date)}
             </Text>
           </View>
@@ -115,19 +96,15 @@ const TransactionItem: React.FC<Props> = ({ transaction }) => {
             <Text
               style={[
                 styles.amount,
-                { color: isIncome ? theme.income : theme.expense },
+                { color: accentColor },
               ]}>
               {isIncome ? '+' : '-'}{formatCurrency(transaction.amount)}
             </Text>
-            <Text style={[styles.date, { color: theme.textSecondary }]}>
+            <Text style={[styles.date, { color: secondaryTextColor }]}>
               {formatShortDate(transaction.date)}
             </Text>
           </View>
         </LinearGradient>
-        <Animated.View
-          pointerEvents="none"
-          style={[styles.animatedBorder, { opacity: borderGlowAnim, borderColor: animatedBorderColor }]}
-        />
       </Animated.View>
     </TouchableOpacity>
   );
@@ -136,23 +113,27 @@ const TransactionItem: React.FC<Props> = ({ transaction }) => {
 const styles = StyleSheet.create({
   container: {
     borderRadius: 16,
-    marginBottom: 10,
-    borderWidth: 1,
+    marginBottom: spacing.xs,
     overflow: 'hidden',
     shadowColor: '#0F2A1D',
     shadowOffset: { width: 0, height: 6 },
     shadowRadius: 12,
     elevation: 5,
   },
+  accentBar: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 4,
+    zIndex: 1,
+  },
   innerGradient: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 14,
-  },
-  animatedBorder: {
-    ...StyleSheet.absoluteFillObject,
-    borderWidth: 1,
-    borderRadius: 16,
+    paddingVertical: spacing.sm,
+    paddingRight: spacing.sm,
+    paddingLeft: spacing.sm + 8,
   },
   iconContainer: {
     width: 44,
@@ -164,11 +145,11 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   details: { flex: 1 },
-  name: { fontSize: 14, fontWeight: '700', marginBottom: 2 },
-  note: { fontSize: 12 },
+  name: { fontSize: typography.sm, fontWeight: '700', marginBottom: 2 },
+  note: { fontSize: typography.xs },
   right: { alignItems: 'flex-end' },
-  amount: { fontSize: 15, fontWeight: '800' },
-  date: { fontSize: 11, marginTop: 2 },
+  amount: { fontSize: typography.md, fontWeight: '800' },
+  date: { fontSize: typography.xs, marginTop: 2 },
 });
 
 export default TransactionItem;

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -17,6 +17,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useTransactions } from '../context/TransactionContext';
 import { clearAll, setAuthenticated } from '../utils/storage';
 import { formatCurrency } from '../utils/formatters';
+import { typography, spacing } from '../theme/typography';
 
 interface Props {
   navigation: any;
@@ -33,6 +34,9 @@ const ProfileScreen: React.FC<Props> = ({ navigation, onLogout }) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const fabAnim = useRef(new Animated.Value(0)).current;
+  const lastScrollY = useRef(0);
+  const fabHidden = useRef(false);
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -67,20 +71,64 @@ const ProfileScreen: React.FC<Props> = ({ navigation, onLogout }) => {
 
   const initial = user.name.charAt(0).toUpperCase();
 
+  const toggleFab = (hide: boolean) => {
+    if (fabHidden.current === hide) return;
+    fabHidden.current = hide;
+    Animated.timing(fabAnim, {
+      toValue: hide ? 1 : 0,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleScroll = (event: any) => {
+    const currentY = event.nativeEvent.contentOffset.y;
+    const delta = currentY - lastScrollY.current;
+
+    if (currentY <= 16) {
+      toggleFab(false);
+    } else if (delta > 8) {
+      toggleFab(true);
+    } else if (delta < -8) {
+      toggleFab(false);
+    }
+
+    lastScrollY.current = currentY;
+  };
+
   return (
     <LinearGradient
-      colors={isDark ? ['#0D0D0D', '#111111'] : ['#F5F6FA', '#EEF2FF']}
+      colors={isDark ? ['#0D0D0D', '#111111'] : ['#FAFAFA', '#FFFDF8']}
       style={styles.gradient}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          onScroll={handleScroll}
+          scrollEventThrottle={16}>
           {/* Top bar */}
           <View style={styles.topBar}>
             <Text style={[styles.appName, { color: theme.text }]}>PayU</Text>
             <View style={styles.topBarRight}>
-              <TouchableOpacity onPress={toggleTheme} style={[styles.topBtn, { backgroundColor: theme.card }]}>
+              <TouchableOpacity
+                onPress={toggleTheme}
+                style={[
+                  styles.topIconBtn,
+                  {
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.05)',
+                    borderColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.08)',
+                  },
+                ]}>
                 <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={18} color={theme.text} />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.topBtn, { backgroundColor: theme.card }]}>
+              <TouchableOpacity
+                style={[
+                  styles.topIconBtn,
+                  {
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.05)',
+                    borderColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.08)',
+                  },
+                ]}>
                 <Ionicons name="notifications-outline" size={18} color={theme.text} />
               </TouchableOpacity>
             </View>
@@ -220,85 +268,102 @@ const ProfileScreen: React.FC<Props> = ({ navigation, onLogout }) => {
       </KeyboardAvoidingView>
 
       {/* FAB */}
-      <TouchableOpacity
-        style={[styles.fab, { backgroundColor: theme.text }]}
-        onPress={() => navigation.navigate('AddTransaction')}>
-        <Text style={[styles.fabText, { color: theme.background }]}>+</Text>
-      </TouchableOpacity>
+      <Animated.View
+        style={{
+          transform: [
+            {
+              translateY: fabAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 100],
+              }),
+            },
+          ],
+          opacity: fabAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [1, 0],
+          }),
+        }}>
+        <TouchableOpacity
+          style={[styles.fab, { backgroundColor: theme.text }]}
+          onPress={() => navigation.navigate('AddTransaction')}>
+          <Text style={[styles.fabText, { color: theme.background }]}>+</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   gradient: { flex: 1 },
-  scroll: { padding: 20, paddingTop: 60, paddingBottom: 100 },
+  scroll: { padding: spacing.lg, paddingTop: 60, paddingBottom: 100 },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: spacing.lg,
   },
-  appName: { fontSize: 18, fontWeight: '800', letterSpacing: 0.3 },
-  topBarRight: { flexDirection: 'row', gap: 10 },
-  topBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 11,
+  appName: { fontSize: typography.md, fontWeight: '800', letterSpacing: 0.3 },
+  topBarRight: { flexDirection: 'row', gap: spacing.xs },
+  topIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarSection: { alignItems: 'center', marginBottom: 20 },
+  avatarSection: { alignItems: 'center', marginBottom: spacing.lg },
   avatar: {
     width: 72,
     height: 72,
     borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: spacing.xs,
   },
-  avatarLetter: { fontSize: 30, color: '#fff', fontWeight: '700' },
-  userName: { fontSize: 20, fontWeight: '700' },
+  avatarLetter: { fontSize: typography.lg, color: '#fff', fontWeight: '700' },
+  userName: { fontSize: typography.md, fontWeight: '700' },
   tabToggle: {
     flexDirection: 'row',
     borderRadius: 14,
-    padding: 4,
-    marginBottom: 16,
+    padding: spacing.xs,
+    marginBottom: spacing.md,
     gap: 4,
   },
   tabBtn: {
     flex: 1,
-    paddingVertical: 10,
+    paddingVertical: spacing.xs,
     borderRadius: 10,
     alignItems: 'center',
   },
   tabBtnActive: { backgroundColor: '#333' },
-  tabText: { fontSize: 14, fontWeight: '600' },
+  tabText: { fontSize: typography.sm, fontWeight: '600' },
   previewCard: { borderRadius: 20, padding: 20 },
   previewRow: {
     paddingVertical: 14,
     borderBottomWidth: 1,
     gap: 4,
   },
-  previewLabel: { fontSize: 12 },
-  previewValue: { fontSize: 16, fontWeight: '600' },
-  statsRow: { flexDirection: 'row', gap: 8, marginTop: 16, marginBottom: 16 },
-  statBox: { flex: 1, borderRadius: 12, padding: 12, alignItems: 'center' },
-  statValue: { fontSize: 14, fontWeight: '700', marginBottom: 2 },
-  statLabel: { fontSize: 11 },
+  previewLabel: { fontSize: typography.xs },
+  previewValue: { fontSize: typography.md, fontWeight: '600' },
+  statsRow: { flexDirection: 'row', gap: spacing.xs, marginTop: spacing.md, marginBottom: spacing.md },
+  statBox: { flex: 1, borderRadius: 12, padding: spacing.sm, alignItems: 'center' },
+  statValue: { fontSize: typography.sm, fontWeight: '700', marginBottom: 2 },
+  statLabel: { fontSize: typography.xs },
   logoutBtn: {
     borderWidth: 1.5,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: 'center',
   },
-  logoutText: { fontSize: 15, fontWeight: '700' },
+  logoutText: { fontSize: typography.md, fontWeight: '700' },
   editCard: { borderRadius: 20, padding: 20 },
-  fieldLabel: { fontSize: 13, marginBottom: 6, marginTop: 12 },
+  fieldLabel: { fontSize: typography.xs, marginBottom: 6, marginTop: 12 },
   input: {
     height: 48,
     borderRadius: 12,
     paddingHorizontal: 14,
-    fontSize: 14,
+    fontSize: typography.sm,
     borderWidth: 1.5,
   },
   eyeBtn: {
@@ -313,10 +378,10 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: spacing.lg,
   },
-  updateBtnText: { fontSize: 15, fontWeight: '700', color: '#000' },
-  error: { color: '#FF6B6B', fontSize: 12, marginTop: 4 },
+  updateBtnText: { fontSize: typography.md, fontWeight: '700', color: '#000' },
+  error: { color: '#FF6B6B', fontSize: typography.xs, marginTop: 4 },
   fab: {
     position: 'absolute',
     bottom: 30,
@@ -332,7 +397,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 10,
   },
-  fabText: { fontSize: 26, fontWeight: '300', marginTop: -2 },
+  fabText: { fontSize: typography.lg, fontWeight: '300', marginTop: -2 },
 });
 
 export default ProfileScreen;

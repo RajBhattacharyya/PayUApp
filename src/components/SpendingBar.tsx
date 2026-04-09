@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   label: {
-    fontSize: 11,
+    fontSize: 12,
   },
 });
 

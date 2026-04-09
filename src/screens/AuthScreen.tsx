@@ -17,6 +17,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '../context/ThemeContext';
 import { useTransactions } from '../context/TransactionContext';
 import { setAuthenticated } from '../utils/storage';
+import { typography, spacing } from '../theme/typography';
 
 interface Props {
   onAuth: () => void;
@@ -211,15 +212,15 @@ const AuthScreen: React.FC<Props> = ({ onAuth }) => {
 const styles = StyleSheet.create({
   gradient: { flex: 1 },
   kav: { flex: 1 },
-  scroll: { flexGrow: 1, padding: 20, paddingTop: 60 },
-  logoSection: { alignItems: 'center', marginBottom: 32 },
+  scroll: { flexGrow: 1, padding: spacing.lg, paddingTop: 60 },
+  logoSection: { alignItems: 'center', marginBottom: spacing.xxl },
   logoBox: {
     width: 56,
     height: 56,
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
     backgroundColor: '#111418',
     borderWidth: 1,
     borderColor: '#2E353E',
@@ -229,12 +230,12 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 6,
   },
-  logoLetter: { fontSize: 26, fontWeight: '800', color: '#FFFFFF' },
-  appName: { fontSize: 24, fontWeight: '700', marginBottom: 6, color: '#F5F7FA' },
-  tagline: { fontSize: 13, textAlign: 'center', color: '#8D96A2' },
+  logoLetter: { fontSize: typography.lg, fontWeight: '800', color: '#FFFFFF' },
+  appName: { fontSize: typography.lg, fontWeight: '700', marginBottom: 6, color: '#F5F7FA' },
+  tagline: { fontSize: typography.xs, textAlign: 'center', color: '#8D96A2' },
   card: {
     borderRadius: 24,
-    padding: 20,
+    padding: spacing.lg,
     backgroundColor: '#0F1318',
     borderWidth: 1,
     borderColor: '#232A33',
@@ -244,14 +245,14 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 8,
   },
-  cardTitle: { fontSize: 18, fontWeight: '700', marginBottom: 4, color: '#FFFFFF' },
-  cardSub: { fontSize: 13, marginBottom: 16, color: '#8D96A2' },
+  cardTitle: { fontSize: typography.md, fontWeight: '700', marginBottom: 4, color: '#FFFFFF' },
+  cardSub: { fontSize: typography.xs, marginBottom: 16, color: '#8D96A2' },
   tabContainer: {
     flexDirection: 'row',
     backgroundColor: '#171C22',
     borderRadius: 12,
-    padding: 3,
-    marginBottom: 20,
+    padding: spacing.xs,
+    marginBottom: spacing.md,
     position: 'relative',
     height: 44,
   },
@@ -269,15 +270,15 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   tabBtn: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  tabText: { fontSize: 14, fontWeight: '600' },
-  label: { fontSize: 13, marginBottom: 6, marginTop: 12, color: '#A8B1BC' },
+  tabText: { fontSize: typography.sm, fontWeight: '600' },
+  label: { fontSize: typography.xs, marginBottom: 6, marginTop: 12, color: '#A8B1BC' },
   input: {
     height: 48,
     backgroundColor: '#161B21',
     color: '#FFFFFF',
     borderRadius: 12,
     paddingHorizontal: 14,
-    fontSize: 14,
+    fontSize: typography.sm,
     borderWidth: 1.5,
   },
   passwordRow: { position: 'relative' },
@@ -291,7 +292,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   forgotBtn: { alignItems: 'flex-end', marginTop: 6, marginBottom: 4 },
-  forgotText: { fontSize: 13, color: '#8D96A2' },
+  forgotText: { fontSize: typography.xs, color: '#8D96A2' },
   submitBtn: {
     height: 50,
     borderRadius: 14,
@@ -299,10 +300,10 @@ const styles = StyleSheet.create({
     borderColor: '#3B4552',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: spacing.lg,
   },
-  submitText: { fontSize: 15, fontWeight: '700', color: '#FFFFFF' },
-  error: { color: '#FF6B6B', fontSize: 12, marginTop: 4 },
+  submitText: { fontSize: typography.md, fontWeight: '700', color: '#FFFFFF' },
+  error: { color: '#FF6B6B', fontSize: typography.xs, marginTop: 4 },
 });
 
 export default AuthScreen;

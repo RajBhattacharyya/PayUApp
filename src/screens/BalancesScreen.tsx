@@ -1,10 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -18,6 +19,7 @@ import SpendingBar from '../components/SpendingBar';
 import MonthlySummary from '../components/MonthlySummary';
 import EmptyState from '../components/EmptyState';
 import { formatCurrency, getCurrentMonthKey } from '../utils/formatters';
+import { typography, spacing } from '../theme/typography';
 
 interface Props {
   navigation: any;
@@ -29,12 +31,23 @@ const CREDIT_SCORE = 660;
 const SCORE_MIN = 300;
 const SCORE_MAX = 850;
 
+const getCreditStatus = (score: number) => {
+  if (score >= 800) return 'Excellent';
+  if (score >= 740) return 'Very Good';
+  if (score >= 670) return 'Good';
+  if (score >= 580) return 'Fair';
+  return 'Poor';
+};
+
 const BalancesScreen: React.FC<Props> = ({ navigation }) => {
   const { theme, isDark, toggleTheme } = useTheme();
   const { transactions, getMonthlySummary, getFilteredTransactions } = useTransactions();
   const [filter, setFilter] = useState('All');
   const [viewMode, setViewMode] = useState<'chart' | 'list'>('chart');
   const [gaugeKey, setGaugeKey] = useState(0);
+  const fabAnim = useRef(new Animated.Value(0)).current;
+  const lastScrollY = useRef(0);
+  const fabHidden = useRef(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -74,26 +87,69 @@ const BalancesScreen: React.FC<Props> = ({ navigation }) => {
 
   const gaugeRadius = 112;
   const scoreProgress = Math.max(0, Math.min(1, (CREDIT_SCORE - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)));
+  const creditStatus = getCreditStatus(CREDIT_SCORE);
   const pointerAngle = Math.PI - scoreProgress * Math.PI;
   const pointerX = gaugeRadius + gaugeRadius * Math.cos(pointerAngle);
   const pointerY = gaugeRadius - gaugeRadius * Math.sin(pointerAngle);
 
+  const toggleFab = (hide: boolean) => {
+    if (fabHidden.current === hide) return;
+    fabHidden.current = hide;
+    Animated.timing(fabAnim, {
+      toValue: hide ? 1 : 0,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
+  };
+
+  const handleScroll = (event: any) => {
+    const currentY = event.nativeEvent.contentOffset.y;
+    const delta = currentY - lastScrollY.current;
+
+    if (currentY <= 16) {
+      toggleFab(false);
+    } else if (delta > 8) {
+      toggleFab(true);
+    } else if (delta < -8) {
+      toggleFab(false);
+    }
+
+    lastScrollY.current = currentY;
+  };
+
   return (
     <LinearGradient
-      colors={isDark ? ['#0D0D0D', '#111111'] : ['#F5F6FA', '#EEF2FF']}
+      colors={isDark ? ['#0D0D0D', '#111111'] : ['#FAFAFA', '#FFFDF8']}
       style={styles.gradient}>
       <ScrollView
         showsVerticalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         contentContainerStyle={styles.scroll}>
 
         {/* App Bar */}
         <View style={styles.topBar}>
           <Text style={[styles.appName, { color: theme.text }]}>PayU</Text>
           <View style={styles.topBarRight}>
-            <TouchableOpacity onPress={toggleTheme} style={[styles.topBtn, { backgroundColor: theme.card }]}>
+            <TouchableOpacity
+              onPress={toggleTheme}
+              style={[
+                styles.topIconBtn,
+                {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.05)',
+                  borderColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.08)',
+                },
+              ]}>
               <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={18} color={theme.text} />
             </TouchableOpacity>
-            <TouchableOpacity style={[styles.topBtn, { backgroundColor: theme.card }]}>
+            <TouchableOpacity
+              style={[
+                styles.topIconBtn,
+                {
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.05)',
+                  borderColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.08)',
+                },
+              ]}>
               <Ionicons name="notifications-outline" size={18} color={theme.text} />
             </TouchableOpacity>
           </View>
@@ -132,6 +188,7 @@ const BalancesScreen: React.FC<Props> = ({ navigation }) => {
                 centerLabelComponent={() => (
                   <View style={styles.creditCenterLabel}>
                     <Text style={[styles.creditScore, { color: theme.text }]}>{CREDIT_SCORE}</Text>
+                    <Text style={[styles.creditStatus, { color: theme.textSecondary }]}>{creditStatus}</Text>
                   </View>
                 )}
                 isAnimated
@@ -259,37 +316,54 @@ const BalancesScreen: React.FC<Props> = ({ navigation }) => {
       </ScrollView>
 
       {/* FAB */}
-      <TouchableOpacity
-        style={[styles.fab, { backgroundColor: theme.text }]}
-        onPress={() => navigation.navigate('AddTransaction')}>
-        <Text style={[styles.fabText, { color: theme.background }]}>+</Text>
-      </TouchableOpacity>
+      <Animated.View
+        style={{
+          transform: [
+            {
+              translateY: fabAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 100],
+              }),
+            },
+          ],
+          opacity: fabAnim.interpolate({
+            inputRange: [0, 1],
+            outputRange: [1, 0],
+          }),
+        }}>
+        <TouchableOpacity
+          style={[styles.fab, { backgroundColor: theme.text }]}
+          onPress={() => navigation.navigate('AddTransaction')}>
+          <Text style={[styles.fabText, { color: theme.background }]}>+</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   gradient: { flex: 1 },
-  scroll: { padding: 20, paddingTop: 60, paddingBottom: 100 },
+  scroll: { padding: spacing.lg, paddingTop: 60, paddingBottom: 100 },
   topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: spacing.md,
   },
-  appName: { fontSize: 18, fontWeight: '800', letterSpacing: 0.3 },
-  topBarRight: { flexDirection: 'row', gap: 10 },
-  topBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 11,
+  appName: { fontSize: typography.md, fontWeight: '800', letterSpacing: 0.3 },
+  topBarRight: { flexDirection: 'row', gap: spacing.xs },
+  topIconBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  header: { marginBottom: 8 },
-  headerTitle: { fontSize: 26, fontWeight: '800' },
+  header: { marginBottom: spacing.md },
+  headerTitle: { fontSize: typography.lg, fontWeight: '800' },
   headerSub: {
-    fontSize: 13,
+    fontSize: typography.xs,
     marginTop: 2,
     alignSelf: 'flex-start',
     paddingBottom: 1,
@@ -297,9 +371,9 @@ const styles = StyleSheet.create({
   viewToggle: {
     flexDirection: 'row',
     borderRadius: 14,
-    padding: 4,
-    marginVertical: 12,
-    gap: 4,
+    padding: spacing.xs,
+    marginVertical: spacing.sm,
+    gap: spacing.xs,
   },
   viewBtn: {
     flex: 1,
@@ -309,19 +383,19 @@ const styles = StyleSheet.create({
   },
   viewBtnContent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   viewBtnActive: { backgroundColor: '#1B1B1B' },
-  viewBtnText: { fontSize: 13, fontWeight: '600' },
+  viewBtnText: { fontSize: typography.sm, fontWeight: '600' },
   creditCard: {
     borderRadius: 20,
-    padding: 16,
-    marginTop: 4,
-    marginBottom: 8,
+    padding: spacing.md,
+    marginTop: spacing.xs,
+    marginBottom: spacing.sm,
   },
   creditHeader: {
     alignItems: 'center',
     marginTop: 0,
   },
-  creditTitle: { fontSize: 16, fontWeight: '800' },
-  creditMeta: { fontSize: 12, marginTop: 2 },
+  creditTitle: { fontSize: typography.md, fontWeight: '800' },
+  creditMeta: { fontSize: typography.xs, marginTop: 2 },
   creditGaugeWrap: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -358,39 +432,39 @@ const styles = StyleSheet.create({
   },
   creditCenterLabel: {
     alignItems: 'center',
-    marginTop: -2,
+    marginTop: -6,
     width: 190,
   },
-  creditScore: { fontSize: 48, fontWeight: '800', letterSpacing: -1 },
-  creditStatus: { fontSize: 13, fontWeight: '700', marginTop: 2, textAlign: 'center' },
+  creditScore: { fontSize: 34, fontWeight: '900', letterSpacing: -0.6 },
+  creditStatus: { fontSize: typography.xs, fontWeight: '600', marginTop: 2, textAlign: 'center', letterSpacing: 0.3 },
   chartCard: {
     borderRadius: 20,
-    padding: 16,
-    marginBottom: 12,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
   },
-  chartTitle: { fontSize: 16, fontWeight: '700', marginBottom: 2 },
-  chartSub: { fontSize: 12, marginBottom: 12 },
+  chartTitle: { fontSize: typography.md, fontWeight: '700', marginBottom: 2 },
+  chartSub: { fontSize: typography.xs, marginBottom: 12 },
   currencyRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingVertical: 12,
     borderBottomWidth: 1,
   },
-  currencyName: { fontSize: 14, fontWeight: '600' },
-  currencyFull: { fontSize: 12 },
+  currencyName: { fontSize: typography.sm, fontWeight: '600' },
+  currencyFull: { fontSize: typography.xs },
   enableBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: spacing.xs - 2,
+    paddingVertical: spacing.xs / 2,
     borderRadius: 8,
     borderWidth: 1,
   },
-  enableBtnText: { fontSize: 11, fontWeight: '500' },
+  enableBtnText: { fontSize: typography.xs, fontWeight: '500' },
   filterRow: {
     flexDirection: 'row',
     borderRadius: 14,
-    padding: 4,
-    marginBottom: 12,
-    gap: 4,
+    padding: spacing.xs,
+    marginBottom: spacing.sm,
+    gap: spacing.xs,
   },
   filterBtn: {
     flex: 1,
@@ -398,7 +472,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
   },
-  filterText: { fontSize: 13, fontWeight: '600' },
+  filterText: { fontSize: typography.sm, fontWeight: '600' },
   fab: {
     position: 'absolute',
     bottom: 30,
@@ -414,7 +488,7 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
     elevation: 10,
   },
-  fabText: { fontSize: 26, fontWeight: '300', marginTop: -2 },
+  fabText: { fontSize: typography.lg, fontWeight: '300', marginTop: -2 },
 });
 
 export default BalancesScreen;

@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   legendAmt: {
-    fontSize: 11,
+    fontSize: 12,
   },
 });
 

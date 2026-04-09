@@ -1,4 +1,5 @@
 import React, { useRef, useEffect } from 'react';
+import { typography } from '../theme/typography';
 import { View, Text, StyleSheet, Animated } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
@@ -39,8 +40,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   icon: { fontSize: 48, marginBottom: 8 },
-  title: { fontSize: 16, fontWeight: '700' },
-  subtitle: { fontSize: 13, textAlign: 'center', maxWidth: 220 },
+  title: { fontSize: typography.md, fontWeight: '700' },
+  subtitle: { fontSize: typography.xs, textAlign: 'center', maxWidth: 220 },
 });
 
 export default EmptyState;

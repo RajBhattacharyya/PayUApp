@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../context/ThemeContext';
 import { formatCurrency } from '../utils/formatters';
+import { typography, spacing } from '../theme/typography';
 
 interface Props {
   income: number;
@@ -46,16 +47,16 @@ const MonthlySummary: React.FC<Props> = ({ income, expenses, balance }) => {
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    gap: 8,
-    marginVertical: 12,
+    gap: spacing.xs,
+    marginVertical: spacing.sm,
   },
   item: {
     flex: 1,
     borderRadius: 16,
-    padding: 14,
+    padding: spacing.sm,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: spacing.xs,
   },
   dot: {
     width: 8,
@@ -63,11 +64,11 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   label: {
-    fontSize: 11,
+    fontSize: typography.xs,
     marginBottom: 2,
   },
   value: {
-    fontSize: 14,
+    fontSize: typography.sm,
     fontWeight: '700',
   },
 });

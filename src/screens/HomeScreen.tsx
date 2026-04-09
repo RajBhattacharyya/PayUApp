@@ -5,6 +5,7 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
+    Pressable,
     Animated,
     RefreshControl,
 } from 'react-native';
@@ -17,6 +18,7 @@ import TransactionItem from '../components/TransactionItem';
 import MonthlySummary from '../components/MonthlySummary';
 import EmptyState from '../components/EmptyState';
 import { formatCurrency, getCurrentMonthKey, getMonthYear } from '../utils/formatters';
+import { typography, spacing } from '../theme/typography';
 
 interface Props {
     navigation: any;
@@ -27,6 +29,10 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
     const { user, getFilteredTransactions, getMonthlySummary } = useTransactions();
     const [refreshing, setRefreshing] = useState(false);
     const headerAnim = useRef(new Animated.Value(0)).current;
+    const fabAnim = useRef(new Animated.Value(0)).current;
+    const lastScrollY = useRef(0);
+    const fabHidden = useRef(false);
+    const lastThemeToggleAt = useRef(0);
 
     const monthKey = getCurrentMonthKey();
     const txns = getFilteredTransactions(monthKey);
@@ -52,13 +58,48 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
     const firstName = user.name.split(' ')[0];
 
+    const handleThemeToggle = () => {
+        const now = Date.now();
+        // Guard against accidental double taps causing instant toggle-back.
+        if (now - lastThemeToggleAt.current < 220) return;
+        lastThemeToggleAt.current = now;
+        toggleTheme();
+    };
+
+    const toggleFab = (hide: boolean) => {
+        if (fabHidden.current === hide) return;
+        fabHidden.current = hide;
+        Animated.timing(fabAnim, {
+            toValue: hide ? 1 : 0,
+            duration: 180,
+            useNativeDriver: true,
+        }).start();
+    };
+
+    const handleScroll = (event: any) => {
+        const currentY = event.nativeEvent.contentOffset.y;
+        const delta = currentY - lastScrollY.current;
+
+        if (currentY <= 16) {
+            toggleFab(false);
+        } else if (delta > 8) {
+            toggleFab(true);
+        } else if (delta < -8) {
+            toggleFab(false);
+        }
+
+        lastScrollY.current = currentY;
+    };
+
     return (
         <LinearGradient
-            colors={isDark ? ['#0D0D0D', '#111111'] : ['#F5F6FA', '#EEF2FF']}
+            colors={isDark ? ['#0D0D0D', '#111111'] : ['#FAFAFA', '#FFFDF8']}
             style={styles.gradient}>
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.accent} />}
+                onScroll={handleScroll}
+                scrollEventThrottle={16}
                 contentContainerStyle={styles.scroll}>
 
                 {/* App Bar */}
@@ -66,11 +107,24 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
                     <Text style={[styles.appName, { color: theme.text }]}>PayU</Text>
                     <View style={styles.topBarRight}>
                         <TouchableOpacity
-                            onPress={toggleTheme}
-                            style={[styles.topBtn, { backgroundColor: theme.card }]}>
+                            onPress={handleThemeToggle}
+                            style={[
+                                styles.topIconBtn,
+                                {
+                                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.05)',
+                                    borderColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.08)',
+                                },
+                            ]}>
                             <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={18} color={theme.text} />
                         </TouchableOpacity>
-                        <TouchableOpacity style={[styles.topBtn, { backgroundColor: theme.card }]}>
+                        <TouchableOpacity
+                            style={[
+                                styles.topIconBtn,
+                                {
+                                    backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(15,23,42,0.05)',
+                                    borderColor: isDark ? 'rgba(255,255,255,0.14)' : 'rgba(15,23,42,0.08)',
+                                },
+                            ]}>
                             <Ionicons name="notifications-outline" size={18} color={theme.text} />
                         </TouchableOpacity>
                     </View>
@@ -111,11 +165,13 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
 
                 {/* Bank Card Preview */}
                 <GradientCard
-                    gradientColors={['#FC5C7D', '#C86DD7', '#6A3093']}
+                    gradientColors={['#FF5C9D', '#6A3093']}
                     bankName="PayU Bank"
                     cardNumber="8763 1111 2222 0329"
                     holderName={user.name.toUpperCase()}
                     expiry="10/28"
+                    start={{ x: 1, y: 0 }}
+                    end={{ x: 0, y: 1 }}
                     style={styles.bankCard}
                 />
 
@@ -129,18 +185,50 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
                 {/* Quick Actions */}
                 <View style={styles.quickActions}>
                     {[
-                        { icon: 'add-circle-outline', label: 'Add', action: () => navigation.navigate('AddTransaction') },
-                        { icon: 'wallet-outline', label: 'Stats', action: () => navigation.navigate('Balances') },
-                        { icon: 'person-outline', label: 'Profile', action: () => navigation.navigate('Profile') },
-                        { icon: isDark ? 'sunny-outline' : 'moon-outline', label: 'Theme', action: toggleTheme },
+                        {
+                            icon: 'add-circle-outline',
+                            label: 'Add',
+                            action: () => navigation.navigate('AddTransaction'),
+                            iconColor: isDark ? '#6CF2C1' : '#0C8E5E',
+                        },
+                        {
+                            icon: 'wallet-outline',
+                            label: 'Stats',
+                            action: () => navigation.navigate('Balances'),
+                            iconColor: isDark ? '#8BC3FF' : '#2E6FD8',
+                        },
+                        {
+                            icon: 'person-outline',
+                            label: 'Profile',
+                            action: () => navigation.navigate('Profile'),
+                            iconColor: isDark ? '#F8B4D9' : '#B24E91',
+                        },
+                        {
+                            icon: isDark ? 'sunny-outline' : 'moon-outline',
+                            label: 'Theme',
+                            action: handleThemeToggle,
+                            iconColor: isDark ? '#F7D37D' : '#6B5BDE',
+                        },
                     ].map((q, i) => (
-                        <TouchableOpacity
-                            key={i}
+                        <Pressable
+                            key={q.label}
                             onPress={q.action}
-                            style={[styles.quickAction, { backgroundColor: theme.card }]}>
-                            <Ionicons name={q.icon as any} size={22} color={theme.text} />
-                            <Text style={[styles.quickLabel, { color: theme.textSecondary }]}>{q.label}</Text>
-                        </TouchableOpacity>
+                            android_ripple={{
+                                color: isDark ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.08)',
+                                borderless: false,
+                            }}
+                            style={({ pressed }) => [
+                                styles.quickAction,
+                                {
+                                    backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : '#FFFFFF',
+                                    borderColor: isDark ? 'rgba(255,255,255,0.16)' : '#E4E8EF',
+                                    opacity: pressed ? 0.92 : 1,
+                                    transform: [{ scale: pressed ? 0.98 : 1 }],
+                                },
+                            ]}>
+                            <Ionicons name={q.icon as any} size={22} color={q.iconColor} />
+                            <Text style={[styles.quickLabel, { color: theme.secondary }]}>{q.label}</Text>
+                        </Pressable>
                     ))}
                 </View>
 
@@ -165,30 +253,47 @@ const HomeScreen: React.FC<Props> = ({ navigation }) => {
             </ScrollView>
 
             {/* FAB */}
-            <TouchableOpacity
-                style={[styles.fab, { backgroundColor: theme.text }]}
-                onPress={() => navigation.navigate('AddTransaction')}>
-                <Text style={[styles.fabText, { color: theme.background }]}>+</Text>
-            </TouchableOpacity>
+            <Animated.View
+                style={{
+                    transform: [
+                        {
+                            translateY: fabAnim.interpolate({
+                                inputRange: [0, 1],
+                                outputRange: [0, 100],
+                            }),
+                        },
+                    ],
+                    opacity: fabAnim.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [1, 0],
+                    }),
+                }}>
+                <TouchableOpacity
+                    style={[styles.fab, { backgroundColor: theme.text }]}
+                    onPress={() => navigation.navigate('AddTransaction')}>
+                    <Text style={[styles.fabText, { color: theme.background }]}>+</Text>
+                </TouchableOpacity>
+            </Animated.View>
         </LinearGradient>
     );
 };
 
 const styles = StyleSheet.create({
     gradient: { flex: 1 },
-    scroll: { padding: 20, paddingTop: 60, paddingBottom: 100 },
+    scroll: { padding: spacing.lg, paddingTop: 60, paddingBottom: 100 },
     topBar: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 16,
+        marginBottom: spacing.md,
     },
-    appName: { fontSize: 18, fontWeight: '800', letterSpacing: 0.3 },
+    appName: { fontSize: typography.md, fontWeight: '800', letterSpacing: 0.3 },
     topBarRight: { flexDirection: 'row', gap: 10 },
-    topBtn: {
-        width: 38,
-        height: 38,
-        borderRadius: 11,
+    topIconBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        borderWidth: 1,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -196,15 +301,15 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 20,
+        marginBottom: spacing.lg,
     },
-    greeting: { fontSize: 15 },
-    userName: { fontSize: 24, fontWeight: '800' },
-    balanceCard: { marginBottom: 16 },
-    balanceContent: { padding: 20 },
-    balanceLabel: { color: 'rgba(255,255,255,0.7)', fontSize: 13, marginBottom: 4 },
-    balanceAmount: { color: '#fff', fontSize: 36, fontWeight: '800', marginBottom: 4 },
-    balanceSub: { color: 'rgba(255,255,255,0.5)', fontSize: 12, marginBottom: 16 },
+    greeting: { fontSize: typography.xs, fontWeight: '400', letterSpacing: 0.2 },
+    userName: { fontSize: typography.lg, fontWeight: '800' },
+    balanceCard: { marginBottom: spacing.md },
+    balanceContent: { padding: spacing.lg },
+    balanceLabel: { color: 'rgba(255,255,255,0.7)', fontSize: typography.xs, marginBottom: spacing.xs },
+    balanceAmount: { color: '#fff', fontSize: typography.lg, fontWeight: '800', marginBottom: spacing.xs },
+    balanceSub: { color: 'rgba(255,255,255,0.5)', fontSize: typography.xs, marginBottom: spacing.md },
     balanceStats: {
         flexDirection: 'row',
         backgroundColor: 'rgba(255,255,255,0.1)',
@@ -212,33 +317,34 @@ const styles = StyleSheet.create({
         padding: 12,
     },
     balanceStat: { flex: 1, alignItems: 'center' },
-    balanceStatLabel: { color: 'rgba(255,255,255,0.6)', fontSize: 11, marginBottom: 4 },
-    balanceStatValue: { color: '#fff', fontSize: 15, fontWeight: '700' },
+    balanceStatLabel: { color: 'rgba(255,255,255,0.6)', fontSize: typography.xs, marginBottom: 4 },
+    balanceStatValue: { color: '#fff', fontSize: typography.sm, fontWeight: '700' },
     balanceDivider: { width: 1, backgroundColor: 'rgba(255,255,255,0.2)', marginHorizontal: 8 },
-    bankCard: { marginBottom: 8 },
+    bankCard: { marginBottom: spacing.xs },
     quickActions: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginVertical: 12,
-        gap: 8,
+        marginVertical: spacing.sm,
+        gap: spacing.xs,
     },
     quickAction: {
         flex: 1,
         alignItems: 'center',
-        padding: 14,
-        borderRadius: 16,
-        gap: 6,
+        padding: spacing.md - 2,
+        borderRadius: 20,
+        borderWidth: 1,
+        gap: spacing.xs - 2,
     },
-    quickLabel: { fontSize: 11, fontWeight: '500' },
-    section: { marginTop: 4 },
+    quickLabel: { fontSize: typography.xs, fontWeight: '500' },
+    section: { marginTop: spacing.xs },
     sectionHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 12,
+        marginBottom: spacing.sm,
     },
-    sectionTitle: { fontSize: 17, fontWeight: '700' },
-    seeAll: { fontSize: 13, fontWeight: '600' },
+    sectionTitle: { fontSize: typography.md, fontWeight: '700' },
+    seeAll: { fontSize: typography.sm, fontWeight: '600' },
     fab: {
         position: 'absolute',
         bottom: 30,
@@ -254,7 +360,7 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
         elevation: 10,
     },
-    fabText: { fontSize: 26, fontWeight: '300', marginTop: -2 },
+    fabText: { fontSize: typography.lg, fontWeight: '300', marginTop: -2 },
 });
 
 export default HomeScreen;

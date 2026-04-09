@@ -22,7 +22,7 @@ export const DarkTheme = {
 };
 
 export const LightTheme = {
-  background: '#F5F6FA',
+  background: '#FAFAFA',
   surface: '#FFFFFF',
   card: '#FFFFFF',
   border: '#E8E8E8',
@@ -34,8 +34,8 @@ export const LightTheme = {
   expense: '#FF4D4D',
   tabBar: '#FFFFFF',
   inputBg: '#F0F0F0',
-  gradientStart: '#E8FFF5',
-  gradientEnd: '#F5F6FA',
+  gradientStart: '#F3FFF9',
+  gradientEnd: '#FAFAFA',
   cardGradient: ['#1F4037', '#99F2C8'],
   cardGradient2: ['#FC5C7D', '#6A3093'],
   cardGradient3: ['#2193b0', '#6dd5ed'],

@@ -9,6 +9,7 @@ import {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { CATEGORIES, Category } from '../utils/categories';
 import { useTheme } from '../context/ThemeContext';
+import { typography, spacing } from '../theme/typography';
 
 interface Props {
   selected: string;
@@ -47,18 +48,18 @@ const CategoryPicker: React.FC<Props> = ({ selected, type, onSelect }) => {
 };
 
 const styles = StyleSheet.create({
-  scroll: { marginVertical: 8 },
+  scroll: { marginVertical: spacing.xs },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.sm - 2,
+    paddingVertical: spacing.xs - 2,
     borderRadius: 20,
     borderWidth: 1,
-    marginRight: 8,
-    gap: 6,
+    marginRight: spacing.xs,
+    gap: spacing.xs - 2,
   },
-  label: { fontSize: 13, fontWeight: '500' },
+  label: { fontSize: typography.xs, fontWeight: '500' },
 });
 
 export default CategoryPicker;

@@ -5,6 +5,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { typography } from '../theme/typography';
 import HomeScreen from '../screens/HomeScreen';
 import BalancesScreen from '../screens/BalancesScreen';
 import ProfileScreen from '../screens/ProfileScreen';
@@ -24,7 +25,7 @@ const TabIcon = ({ iconName, activeIconName, label, focused, color }: any) => (
     <Text
       numberOfLines={1}
       ellipsizeMode="clip"
-      style={{ fontSize: 11, color, fontWeight: focused ? '700' : '500', letterSpacing: 0.2, textAlign: 'center' }}>
+      style={{ fontSize: typography.xs, color, fontWeight: focused ? '700' : '500', letterSpacing: 0.2, textAlign: 'center' }}>
       {label}
     </Text>
   </View>
@@ -44,9 +45,16 @@ const MainTabs = ({ onLogout }: { onLogout: () => void }) => {
           backgroundColor: theme.tabBar,
           borderTopColor: theme.border,
           borderTopWidth: 1,
-          height: 45 + insets.bottom,
+          height: 50 + insets.bottom,
           paddingBottom: Math.max(10, insets.bottom),
           paddingTop: 8,
+          // Shadow for iOS (floating effect)
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+          // Elevation for Android
+          elevation: 12,
         },
         tabBarShowLabel: false,
       }}>

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { typography, spacing } from '../theme/typography';
 
 interface GradientCardProps {
   gradientColors: string[];
@@ -22,6 +23,8 @@ interface GradientCardProps {
   children?: React.ReactNode;
   style?: ViewStyle;
   onPress?: () => void;
+  start?: { x: number; y: number };
+  end?: { x: number; y: number };
 }
 
 const GradientCard: React.FC<GradientCardProps> = ({
@@ -36,6 +39,8 @@ const GradientCard: React.FC<GradientCardProps> = ({
   children,
   style,
   onPress,
+  start = { x: 0, y: 0 },
+  end = { x: 1, y: 1 },
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const [showFullCardNumber, setShowFullCardNumber] = useState(false);
@@ -68,8 +73,8 @@ const GradientCard: React.FC<GradientCardProps> = ({
       <Animated.View style={[{ transform: [{ scale: scaleAnim }] }, style]}>
         <LinearGradient
           colors={gradientColors as any}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
+          start={start}
+          end={end}
           style={styles.card}>
           {cardNumber ? (
             <View style={styles.bankCard}>
@@ -125,27 +130,27 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   content: {
-    padding: 20,
+    padding: spacing.lg,
   },
   title: {
     color: 'rgba(255,255,255,0.7)',
-    fontSize: 13,
+    fontSize: typography.xs,
     fontWeight: '500',
     marginBottom: 6,
   },
   amount: {
     color: '#FFFFFF',
-    fontSize: 28,
+    fontSize: typography.lg,
     fontWeight: '700',
     letterSpacing: 0.5,
   },
   subtitle: {
     color: 'rgba(255,255,255,0.6)',
-    fontSize: 12,
+    fontSize: typography.xs,
     marginTop: 4,
   },
   bankCard: {
-    padding: 20,
+    padding: spacing.lg,
     height: 180,
     justifyContent: 'space-between',
   },
@@ -164,7 +169,7 @@ const styles = StyleSheet.create({
   },
   bankName: {
     color: '#FFFFFF',
-    fontSize: 14,
+    fontSize: typography.sm,
     fontWeight: '700',
     letterSpacing: 0.4,
   },
@@ -195,7 +200,7 @@ const styles = StyleSheet.create({
   },
   cardNumber: {
     color: '#FFFFFF',
-    fontSize: 18,
+    fontSize: typography.md,
     fontWeight: '600',
     letterSpacing: 2,
   },
@@ -211,12 +216,12 @@ const styles = StyleSheet.create({
   },
   cardLabel: {
     color: 'rgba(255,255,255,0.6)',
-    fontSize: 10,
+    fontSize: typography.xs,
     marginBottom: 2,
   },
   cardValue: {
     color: '#FFFFFF',
-    fontSize: 13,
+    fontSize: typography.sm,
     fontWeight: '600',
   },
 });
